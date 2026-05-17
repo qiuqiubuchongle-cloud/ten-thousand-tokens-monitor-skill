@@ -1,94 +1,123 @@
-# Data Sources And Limitations
+# 数据源与限制
 
-## Required
+这个监控的设计原则是：发射信号必须来自链上事件，行情和持仓数据只是补充信息。这样即使第三方工具暂时没有索引，也不会错过真正的发射交易。
+
+## 必需数据源
 
 ### Ethereum RPC
 
-Used for:
+Ethereum RPC 是唯一必需的数据源，用于：
 
-- contract code checks;
-- `eth_getLogs` event scanning;
-- ERC20 metadata calls;
-- block height tracking.
+- 检查合约代码是否存在；
+- 通过 `eth_getLogs` 扫描 `Launched` 事件；
+- 读取 ERC20 的 name、symbol、decimals、totalSupply；
+- 获取当前区块高度；
+- 按确认数延迟扫描，降低重组影响。
 
-Recommended providers:
+推荐服务：
 
 - Alchemy
 - Infura
 - QuickNode
 - Ankr
-- PublicNode for testing only
+- PublicNode，仅建议测试使用
 
-Public RPCs are fine for quick checks but can rate-limit or drop large historical scans.
+公共 RPC 可以快速试跑，但可能限流、丢连接，或者无法稳定支持大范围历史扫描。长期运行建议换成自己的 RPC。
 
-## Built-In Public Data
+## 内置公共数据源
 
 ### Dexscreener
 
-Used for:
+Dexscreener 用于补全：
 
-- price;
-- market cap / FDV;
-- liquidity;
-- 24h volume;
-- pair URL.
+- 价格；
+- 市值或 FDV；
+- 流动性；
+- 24 小时交易量；
+- 交易对页面链接。
 
-Limitations:
+限制：
 
-- fresh launches may not be indexed immediately;
-- API/network failures should not block launch detection;
-- Uniswap V4 indexing can lag third-party tools.
+- 新发射代币可能不会立刻被索引；
+- API 或网络失败不应该阻止发射检测；
+- Uniswap V4 相关交易对在第三方工具中的索引可能有延迟。
 
 ### Etherscan V2
 
-Used for:
+Etherscan 用于补全：
 
-- top holder list;
-- top holder concentration.
+- Top 持有人列表；
+- Top1 和 Top10 持仓集中度；
+- 可用时的持有人相关数据。
 
-Needs `ETHERSCAN_API_KEY`.
+需要配置：
 
-Limitations:
+```bash
+ETHERSCAN_API_KEY=
+```
 
-- token holder endpoints can lag after launch;
-- API access and endpoint names may change;
-- holder count may require a different paid or indexed endpoint depending on Etherscan availability.
+限制：
 
-## Alert Completeness Tiers
+- 新发射代币的持有人数据可能延迟；
+- Etherscan API 的接口名称和权限可能变化；
+- 持有人数量可能需要其它索引器或付费接口补全。
 
-### Tier 1: Launch Detection
+## 信息完整度分层
 
-Always available with a working Ethereum RPC:
+### 第 1 层：发射检测
 
-- tokenId;
-- token CA;
-- launcher;
-- transaction hash;
-- block number.
+只要 Ethereum RPC 正常，就应该可以拿到：
 
-### Tier 2: Token Metadata
+- NFT tokenId；
+- 发射出来的 ERC20 CA；
+- launcher 地址；
+- 交易哈希；
+- 区块号。
 
-Usually available immediately:
+这是最核心的信号。
 
-- name;
-- symbol;
-- decimals;
-- total supply.
+### 第 2 层：代币基础信息
 
-### Tier 3: Market Data
+通常可以在发射交易后立刻读取：
 
-Available when indexed:
+- name；
+- symbol；
+- decimals；
+- totalSupply。
 
-- market cap;
-- price;
-- liquidity;
-- volume;
-- pair URL.
+这些数据来自 ERC20 合约本身，但仍然属于项目方可设置的元数据，展示时必须同时展示 CA。
 
-### Tier 4: Holder Data
+### 第 3 层：行情信息
 
-Requires Etherscan or another public indexer:
+被行情工具索引后可以拿到：
 
-- holder count;
-- top holder percentages;
-- cluster concentration.
+- 市值或 FDV；
+- 价格；
+- 流动性；
+- 交易量；
+- 行情页面链接。
+
+刚发射时这些字段可能显示为“未索引”，这不是脚本失败，而是第三方行情工具还没有更新。
+
+### 第 4 层：持仓信息
+
+需要 Etherscan 或其它索引器支持：
+
+- 持有人数量；
+- Top1 持仓比例；
+- Top10 持仓比例；
+- 更复杂的地址聚类集中度。
+
+这个仓库默认只做轻量集中度展示，不对地址归属做主观判断。
+
+## 不能保证的事情
+
+这个监控只负责发现 Ten Thousand Tokens 的发射事件并补全公开数据，不能保证：
+
+- 代币一定安全；
+- 市值或流动性数据实时准确；
+- 持有人数据没有索引延迟；
+- 代币有足够交易深度；
+- 发射后价格一定上涨。
+
+收到通知后，仍然需要自己检查 CA、池子、流动性、持仓结构和交易风险。

@@ -1,3 +1,3 @@
-display_name: Ten Thousand Tokens Monitor
-short_description: Monitor TTT NFT burn-to-launch events and send token launch alerts.
-default_prompt: Monitor Ten Thousand Tokens launches, identify the launched ERC20 CA, enrich market and holder data, and configure alerts.
+display_name: Ten Thousand Tokens 监控器
+short_description: 监控 TTT NFT burn-to-launch 事件，并发送新代币发射通知。
+default_prompt: 监控 Ten Thousand Tokens 发射事件，识别发射出来的 ERC20 CA，补全市值和持仓数据，并配置通知。

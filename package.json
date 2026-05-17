@@ -1,7 +1,7 @@
 {
   "name": "ten-thousand-tokens-monitor-skill",
   "version": "1.0.0",
-  "description": "Codex skill and Node.js monitor for Ten Thousand Tokens launch alerts.",
+  "description": "用于 Ten Thousand Tokens 新代币发射提醒的 Codex skill 和 Node.js 监控脚本。",
   "main": "scripts/ttt-monitor.js",
   "type": "module",
   "scripts": {

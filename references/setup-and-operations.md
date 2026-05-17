@@ -1,14 +1,16 @@
-# Setup And Operations
+# 安装与运行
 
-## Requirements
+这份文档说明如何在本地、服务器、定时任务或 GitHub Actions 中运行监控脚本。
 
-- Node.js 20+
+## 环境要求
+
+- Node.js 20 或更高版本
 - npm
-- Ethereum RPC URL
-- Optional Etherscan API key
-- Optional notification credentials
+- Ethereum RPC 地址
+- 可选的 Etherscan API Key，用于补全持仓集中度
+- 可选的通知渠道配置，比如 Telegram、Discord、飞书或邮箱
 
-## Install
+## 安装
 
 ```bash
 cd ten-thousand-tokens-monitor-skill
@@ -16,78 +18,85 @@ npm install
 cp .env.example .env
 ```
 
-Edit `.env`.
+然后编辑 `.env`。
 
-Minimum config:
+最小配置：
 
 ```bash
 ETH_RPC_URL=https://ethereum-rpc.publicnode.com
 TTT_CONTRACT=0x26d7ad0e930b54b84c00daad077ee31ba9e2fb2e
 ```
 
-Production config should use a private RPC:
+生产环境建议使用自己的付费或稳定 RPC：
 
 ```bash
 ETH_RPC_URL=https://eth-mainnet.g.alchemy.com/v2/YOUR_KEY
 ```
 
-## Run Once
+PublicNode 这类公共 RPC 可以用于测试，但不适合长期大范围扫描。
+
+## 单次轮询
 
 ```bash
 npm run monitor
 ```
 
-The script scans from `state.json.lastCheckedBlock + 1`. If no state exists, it scans the last `LOOKBACK_BLOCKS`.
+脚本会读取状态文件里的 `lastCheckedBlock`，从下一个区块开始扫描。如果没有状态文件，会默认回看最近 `LOOKBACK_BLOCKS` 个区块。
 
-## Live Watch
+状态文件默认是 `scripts/state.json`，可以通过 `STATE_FILE` 修改位置。
+
+## 实时监听
 
 ```bash
 npm run watch
 ```
 
-This keeps a listener open. For production, polling is often safer because public RPC subscriptions can disconnect silently.
+这个模式会保持一个监听器。生产环境更推荐定时轮询，因为公共 RPC 的订阅连接可能静默断开，而定时轮询更容易恢复和排查。
 
-## Manual Test
+## 手动测试代币补全
 
-Test enrichment for a known paired token:
+可以用一个已知的配对代币测试元数据、Dexscreener 和持仓数据补全：
 
 ```bash
 node scripts/ttt-monitor.js --enrich-token 0x74cd414b31459489Daa5981a76cfcc462C6B6623
 ```
 
-Expected metadata:
+这个命令只在本地打印结果，不会发送通知。
+
+预期能读到的基础信息：
 
 - name: `TenThousandTokens #10000`
 - symbol: `TTT-10000`
 - total supply: `1,000,000,000`
 
-## Backfill TokenDeployed
+## 回扫 TokenDeployed
 
-Use this to inspect tokenId to ERC20 mappings:
+如果你想检查 NFT tokenId 与 ERC20 CA 的映射，可以运行：
 
 ```bash
 node scripts/ttt-monitor.js --backfill-deployed --no-state --from 25100000 --to 25112164
 ```
 
-Use smaller ranges on public RPCs.
+公共 RPC 容易限流，回扫时建议使用小区块范围分段执行。
 
-## Cron
+## Cron 定时运行
 
-Run every minute:
+每分钟运行一次：
 
 ```cron
 * * * * * cd /path/to/ten-thousand-tokens-monitor-skill && /usr/local/bin/npm run monitor >> logs/ttt-monitor.log 2>&1
 ```
 
-Recommended:
+建议：
 
-- create a `logs/` directory;
-- use an absolute `npm` path from `which npm`;
-- run under a user account that can read `.env`.
+- 先创建 `logs/` 目录；
+- 用 `which npm` 查到 npm 的绝对路径；
+- 使用能读取 `.env` 的用户运行；
+- 把 `STATE_FILE` 放在稳定路径，避免状态丢失。
 
-## systemd
+## systemd 运行
 
-Timer unit:
+Timer unit：
 
 ```ini
 [Unit]
@@ -102,7 +111,7 @@ Unit=ttt-monitor.service
 WantedBy=timers.target
 ```
 
-Service unit:
+Service unit：
 
 ```ini
 [Unit]
@@ -116,7 +125,7 @@ ExecStart=/usr/bin/npm run monitor
 
 ## GitHub Actions
 
-Cron workflow:
+可以用 GitHub Actions 做定时轮询：
 
 ```yaml
 name: TTT Monitor
@@ -143,11 +152,11 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 ```
 
-Important: GitHub Actions ephemeral storage does not preserve `state.json` between runs unless committed or cached. For GitHub Actions, prefer a small external state store, or set a short `LOOKBACK_BLOCKS` and deduplicate at the alert destination.
+注意：GitHub Actions 的临时文件系统默认不会在不同轮询之间保留 `state.json`。如果要长期使用 Actions，建议接入外部状态存储，或者缩短 `LOOKBACK_BLOCKS` 并在通知端去重。
 
-## Environment Variables
+## 环境变量
 
-Core:
+核心配置：
 
 ```bash
 ETH_RPC_URL=
@@ -158,13 +167,13 @@ SCAN_CHUNK=2000
 LOOKBACK_BLOCKS=5000
 ```
 
-Market/holder data:
+行情与持仓：
 
 ```bash
 ETHERSCAN_API_KEY=
 ```
 
-Notifications:
+通知渠道：
 
 ```bash
 TELEGRAM_BOT_TOKEN=
@@ -180,3 +189,11 @@ SMTP_PASS=
 EMAIL_FROM=
 EMAIL_TO=
 ```
+
+## 常见问题
+
+如果没有通知，先确认最近是否真的出现了新的 `Launched` 事件。这个脚本默认安静运行，没有新发射就不会推送。
+
+如果能读到链上事件，但没有市值或流动性，通常是 Dexscreener 还没有索引，等一段时间再查即可。
+
+如果持仓数据为空，通常是没有配置 `ETHERSCAN_API_KEY`，或者 Etherscan 对新代币的持有人数据还没更新。
