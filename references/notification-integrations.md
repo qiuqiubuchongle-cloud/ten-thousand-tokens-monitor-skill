@@ -82,13 +82,7 @@ TELEGRAM_BOT_TOKEN=1234567890:AAExampleToken
 TELEGRAM_CHAT_ID=123456789
 ```
 
-如果你在本机运行，并且本机访问 Telegram API 需要代理，可以把下面的代理地址替换成自己的本地代理：
-
-```bash
-HTTPS_PROXY=http://127.0.0.1:PORT HTTP_PROXY=http://127.0.0.1:PORT npm run monitor
-```
-
-这只是本机代理示例。部署到服务器时不要直接照抄，除非服务器自己也运行了对应代理。服务器可以直连 Telegram API 时，不需要配置代理。
+如果你不想手动配置，可以直接让 Agent 帮你完成：提供 bot token、chat id 和服务器信息，Agent 会把通知配置写入服务器环境变量，并验证是否能正常发送。
 
 ### 测试
 
