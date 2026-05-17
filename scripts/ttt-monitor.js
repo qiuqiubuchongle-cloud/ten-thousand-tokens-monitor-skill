@@ -206,32 +206,26 @@ function formatUsd(value) {
 
 function formatLaunch(item) {
   const { metadata, market, holders, concentration } = item;
+  const marketCap = market.indexed ? formatUsd(market.marketCap) : "未索引";
+  const liquidity = market.indexed ? formatUsd(market.liquidityUsd) : "未索引";
   const lines = [
-    "发现 Ten Thousand Tokens 发射事件",
+    "TTT 新代币发射",
     "",
-    `NFT ID: #${item.args.tokenId.toString()}`,
-    `Token: ${metadata.name || "未知"} (${metadata.symbol || "未知"})`,
+    `NFT: #${item.args.tokenId.toString()}`,
+    `代币: ${metadata.name || "未知"} (${metadata.symbol || "未知"})`,
     `CA: ${item.tokenAddress}`,
-    `Launcher: ${item.args.launcher}`,
-    `Tx: https://etherscan.io/tx/${item.transactionHash}`,
-    `Block: ${item.blockNumber}`,
-    "",
-    `市值: ${market.indexed ? formatUsd(market.marketCap) : "暂未被 Dexscreener 索引"}`,
-    `价格: ${market.priceUsd ? `$${market.priceUsd}` : "暂无"}`,
-    `流动性: ${formatUsd(market.liquidityUsd)}`,
-    `24h Volume: ${formatUsd(market.volume24h)}`,
-    `Pair: ${market.pairUrl || "暂无"}`,
+    `市值/流动性: ${marketCap} / ${liquidity}`,
     "",
   ];
 
   if (holders.available && concentration) {
-    lines.push(`Top1 持仓: ${concentration.top1Pct}%`);
-    lines.push(`Top5 持仓: ${concentration.top5Pct}%`);
-    lines.push(`Top10 持仓: ${concentration.top10Pct}%`);
-    lines.push(`Holder sample: top ${concentration.sampledHolders}`);
+    lines.push(`持仓: Top1 ${concentration.top1Pct}% / Top10 ${concentration.top10Pct}%`);
   } else {
-    lines.push(`持有人/集中度: 暂无 (${holders.reason || "indexer not available"})`);
+    lines.push("持仓: 暂无数据");
   }
+
+  lines.push(`交易: https://etherscan.io/tx/${item.transactionHash}`);
+  if (market.pairUrl) lines.push(`行情: ${market.pairUrl}`);
 
   return lines.join("\n");
 }

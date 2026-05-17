@@ -4,6 +4,8 @@ A Codex skill and runnable Node.js monitor for Ten Thousand Tokens by TokenWorks
 
 It watches Ethereum mainnet for Ten Thousand Tokens `Launched` events, extracts the launched ERC20 CA, enriches the token with metadata/market/holder data when available, and sends alerts to Telegram, Discord, Feishu/Lark, or email.
 
+Alert messages are intentionally short: NFT id, token name, CA, market/liquidity, holder concentration, and links.
+
 ## Why This Exists
 
 Ten Thousand Tokens does not require guessing from frontend pages. Its verified contract emits a direct launch event:

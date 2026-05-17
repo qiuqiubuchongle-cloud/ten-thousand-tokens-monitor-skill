@@ -1,6 +1,21 @@
 # Notification Integrations
 
-The monitor sends alerts to every configured channel. If one channel fails, the others still run.
+The monitor sends short alerts to every configured channel. If one channel fails, the others still run.
+
+Default alert format:
+
+```text
+TTT 新代币发射
+
+NFT: #1234
+代币: Example Token (EXAMPLE)
+CA: 0x...
+市值/流动性: $123,456 / $12,345
+
+持仓: Top1 12.3% / Top10 45.6%
+交易: https://etherscan.io/tx/0x...
+行情: https://dexscreener.com/ethereum/...
+```
 
 ## Telegram
 
