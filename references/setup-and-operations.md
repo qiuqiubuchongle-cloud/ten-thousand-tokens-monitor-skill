@@ -167,6 +167,12 @@ USE_OKX=0
 ONCHAINOS_PATH=onchainos
 ```
 
+When testing OKX manually, use the global chain flag before `token`:
+
+```bash
+onchainos --chain ethereum token holders --address 0x74cd414b31459489daa5981a76cfcc462c6b6623 --limit 10
+```
+
 Notifications:
 
 ```bash

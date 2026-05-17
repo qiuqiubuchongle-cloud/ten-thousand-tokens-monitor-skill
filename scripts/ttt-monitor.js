@@ -181,7 +181,7 @@ async function runOkxTokenCommand(command, tokenAddress, extraArgs = []) {
   try {
     const { stdout } = await execFileAsync(
       CONFIG.onchainosPath,
-      ["token", command, "--address", tokenAddress.toLowerCase(), "--chain", "ethereum", ...extraArgs],
+      ["--chain", "ethereum", "token", command, "--address", tokenAddress.toLowerCase(), ...extraArgs],
       { timeout: 20000, maxBuffer: 1024 * 1024 * 4 },
     );
     const trimmed = stdout.trim();
@@ -208,6 +208,11 @@ async function getOkxEnrichment(tokenAddress) {
   return { enabled: true, priceInfo, holders, advancedInfo };
 }
 
+function extractOkxData(result) {
+  if (!result?.available) return null;
+  return result.data?.data ?? result.data ?? null;
+}
+
 function computeConcentration(holders, totalSupplyRaw) {
   if (!holders?.length || !totalSupplyRaw || BigInt(totalSupplyRaw) === 0n) return null;
   const total = BigInt(totalSupplyRaw);
@@ -223,6 +228,28 @@ function computeConcentration(holders, totalSupplyRaw) {
   return { top1Pct: pct(1), top5Pct: pct(5), top10Pct: pct(10), sampledHolders: holders.length };
 }
 
+function computeOkxConcentration(okx) {
+  const advanced = extractOkxData(okx?.advancedInfo);
+  const holders = extractOkxData(okx?.holders);
+  const holderRows = Array.isArray(holders) ? holders : [];
+  const top1 = holderRows[0]?.holdPercent;
+  const top5 = holderRows
+    .slice(0, 5)
+    .reduce((acc, row) => acc + Number(row.holdPercent || 0), 0);
+  const top10 = advanced?.top10HoldPercent ?? (
+    holderRows.length ? holderRows.slice(0, 10).reduce((acc, row) => acc + Number(row.holdPercent || 0), 0) : null
+  );
+
+  if (top1 == null && top10 == null) return null;
+  return {
+    top1Pct: top1 == null ? null : Number(top1),
+    top5Pct: holderRows.length ? top5 : null,
+    top10Pct: top10 == null || top10 === "" ? null : Number(top10),
+    holderRows: holderRows.length,
+    source: "OKX",
+  };
+}
+
 async function enrichLaunch(event) {
   const tokenAddress = event.args.token.toLowerCase();
   const [metadata, market, holders] = await Promise.all([
@@ -233,7 +260,8 @@ async function enrichLaunch(event) {
   const okx = await getOkxEnrichment(tokenAddress);
 
   const concentration = computeConcentration(holders.topHolders, metadata.totalSupplyRaw);
-  return { ...event, tokenAddress, metadata, market, holders, concentration, okx };
+  const okxConcentration = computeOkxConcentration(okx);
+  return { ...event, tokenAddress, metadata, market, holders, concentration, okx, okxConcentration };
 }
 
 function formatUsd(value) {
@@ -244,7 +272,7 @@ function formatUsd(value) {
 }
 
 function formatLaunch(item) {
-  const { metadata, market, holders, concentration } = item;
+  const { metadata, market, holders, concentration, okxConcentration } = item;
   const lines = [
     "发现 Ten Thousand Tokens 发射事件",
     "",
@@ -268,6 +296,11 @@ function formatLaunch(item) {
     lines.push(`Top5 持仓: ${concentration.top5Pct}%`);
     lines.push(`Top10 持仓: ${concentration.top10Pct}%`);
     lines.push(`Holder sample: top ${concentration.sampledHolders}`);
+  } else if (okxConcentration) {
+    lines.push(`Top1 持仓: ${okxConcentration.top1Pct ?? "暂无"}%`);
+    lines.push(`Top5 持仓: ${okxConcentration.top5Pct ?? "暂无"}%`);
+    lines.push(`Top10 持仓: ${okxConcentration.top10Pct ?? "暂无"}%`);
+    lines.push(`Holder source: OKX top ${okxConcentration.holderRows}`);
   } else {
     lines.push(`持有人/集中度: 暂无 (${holders.reason || "indexer not available"})`);
   }

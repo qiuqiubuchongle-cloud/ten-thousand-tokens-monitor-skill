@@ -75,7 +75,11 @@ ONCHAINOS_PATH=/Users/windows/.local/bin/onchainos
 
 Known limitation:
 
-Local OKX auth may fail with JWT refresh/API-key errors. Treat OKX as a fallback, not the only data path.
+Local OKX auth may fail with JWT refresh/API-key errors. Treat OKX as a fallback, not the only data path. In the CLI, prefer putting the global chain flag before the command:
+
+```bash
+onchainos --chain ethereum token holders --address <token> --limit 10
+```
 
 ## Alert Completeness Tiers
 
