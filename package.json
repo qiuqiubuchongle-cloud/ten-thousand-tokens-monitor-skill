@@ -1,0 +1,28 @@
+{
+  "name": "ten-thousand-tokens-monitor-skill",
+  "version": "1.0.0",
+  "description": "Codex skill and Node.js monitor for Ten Thousand Tokens launch alerts.",
+  "main": "scripts/ttt-monitor.js",
+  "type": "module",
+  "scripts": {
+    "monitor": "node scripts/ttt-monitor.js",
+    "watch": "node scripts/ttt-monitor.js --watch",
+    "test": "node scripts/ttt-monitor.js --once --no-state",
+    "check": "node --check scripts/ttt-monitor.js"
+  },
+  "keywords": [
+    "ten-thousand-tokens",
+    "tokenworks",
+    "ethereum",
+    "nft",
+    "monitor",
+    "codex-skill"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "ethers": "^6.16.0",
+    "nodemailer": "^8.0.7"
+  }
+}
