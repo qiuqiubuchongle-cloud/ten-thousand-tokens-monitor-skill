@@ -82,13 +82,13 @@ TELEGRAM_BOT_TOKEN=1234567890:AAExampleToken
 TELEGRAM_CHAT_ID=123456789
 ```
 
-如果你在本机运行，并且本机已经有代理监听 `127.0.0.1:7897`，可以运行时加上代理环境变量：
+如果你在本机运行，并且本机访问 Telegram API 需要代理，可以把下面的代理地址替换成自己的本地代理：
 
 ```bash
-HTTPS_PROXY=http://127.0.0.1:7897 HTTP_PROXY=http://127.0.0.1:7897 npm run monitor
+HTTPS_PROXY=http://127.0.0.1:PORT HTTP_PROXY=http://127.0.0.1:PORT npm run monitor
 ```
 
-这只是本机代理示例。部署到服务器时不要直接照抄 `127.0.0.1:7897`，除非服务器自己也运行了同样端口的代理。服务器可以直连 Telegram API 时，不需要配置代理。
+这只是本机代理示例。部署到服务器时不要直接照抄，除非服务器自己也运行了对应代理。服务器可以直连 Telegram API 时，不需要配置代理。
 
 ### 测试
 

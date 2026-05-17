@@ -220,13 +220,13 @@ cron 示例：
 * * * * * cd /path/to/ten-thousand-tokens-monitor-skill && /usr/local/bin/npm run monitor >> logs/ttt-monitor.log 2>&1
 ```
 
-如果你在本机运行，并且本机已经有代理监听 `127.0.0.1:7897`，可以这样让脚本通过代理访问 Telegram API：
+如果你在本机运行，并且本机访问 Telegram API 需要代理，可以把下面的代理地址替换成自己的本地代理：
 
 ```bash
-HTTPS_PROXY=http://127.0.0.1:7897 HTTP_PROXY=http://127.0.0.1:7897 npm run monitor
+HTTPS_PROXY=http://127.0.0.1:PORT HTTP_PROXY=http://127.0.0.1:PORT npm run monitor
 ```
 
-注意：这只是本机代理示例。部署到服务器时不要直接照抄 `127.0.0.1:7897`，除非服务器自己也运行了同样端口的代理。服务器能直连 Telegram API 时，不需要配置 `HTTP_PROXY` 或 `HTTPS_PROXY`。
+注意：这只是本机代理示例。部署到服务器时不要直接照抄，除非服务器自己也运行了对应代理。服务器能直连 Telegram API 时，不需要配置 `HTTP_PROXY` 或 `HTTPS_PROXY`。
 
 ## 数据源说明
 
