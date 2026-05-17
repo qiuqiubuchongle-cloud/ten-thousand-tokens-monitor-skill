@@ -85,8 +85,7 @@ Launch detection only needs Ethereum RPC.
 Market/holder enrichment needs third-party indexing:
 
 - Dexscreener for price/liquidity/market cap;
-- Etherscan V2 for holder concentration;
-- optional OKX onchainos fallback if local auth works.
+- Etherscan V2 for holder concentration.
 
 Immediately after launch, market cap and holder data may not be indexed yet. The script still alerts with CA and transaction hash.
 

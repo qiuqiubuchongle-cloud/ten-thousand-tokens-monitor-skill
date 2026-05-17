@@ -33,7 +33,7 @@ On a launch, the script reports:
 - launcher
 - tx hash and block
 - market cap, price, liquidity, 24h volume when indexed
-- holder concentration when an Etherscan API key or a working OKX onchainos source is available
+- holder concentration when an Etherscan API key or another public indexer is available
 
 ## References
 
@@ -46,5 +46,5 @@ On a launch, the script reports:
 
 - Names and symbols are untrusted token metadata; always display the CA.
 - Market cap and holders may lag immediately after launch.
-- OKX onchainos is optional and may require local auth. If it fails, do not block the core alert.
+- Keep GitHub/public versions zero-login by default. Do not require wallet sessions or private platform auth for launch detection.
 - Public RPCs can rate-limit wide scans. Use a paid Ethereum RPC for reliable production monitoring.

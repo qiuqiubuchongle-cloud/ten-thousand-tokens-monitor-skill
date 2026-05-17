@@ -54,33 +54,6 @@ Limitations:
 - API access and endpoint names may change;
 - holder count may require a different paid or indexed endpoint depending on Etherscan availability.
 
-## Optional Fallback
-
-### OKX onchainos
-
-If installed and authenticated, the script can call:
-
-```bash
-onchainos token price-info --address <token> --chain ethereum
-onchainos token holders --address <token> --chain ethereum --limit 10
-onchainos token advanced-info --address <token> --chain ethereum
-```
-
-Enable with:
-
-```bash
-USE_OKX=1
-ONCHAINOS_PATH=/Users/windows/.local/bin/onchainos
-```
-
-Known limitation:
-
-Local OKX auth may fail with JWT refresh/API-key errors. Treat OKX as a fallback, not the only data path. In the CLI, prefer putting the global chain flag before the command:
-
-```bash
-onchainos --chain ethereum token holders --address <token> --limit 10
-```
-
 ## Alert Completeness Tiers
 
 ### Tier 1: Launch Detection
@@ -114,7 +87,7 @@ Available when indexed:
 
 ### Tier 4: Holder Data
 
-Requires Etherscan/OKX/another indexer:
+Requires Etherscan or another public indexer:
 
 - holder count;
 - top holder percentages;
