@@ -19,6 +19,39 @@ CA: 0x...
 
 ## Telegram
 
+Telegram is the simplest notification path. The monitor sends one message only when a `Launched` event is found. Normal no-launch polling stays quiet.
+
+### Alert Template
+
+Indexed:
+
+```text
+TTT 新代币发射
+
+NFT: #1234
+代币: Example Token (EXAMPLE)
+CA: 0x...
+市值/流动性: $123,456 / $12,345
+
+持仓: Top1 12.3% / Top10 45.6%
+交易: https://etherscan.io/tx/0x...
+行情: https://dexscreener.com/ethereum/...
+```
+
+Not indexed yet:
+
+```text
+TTT 新代币发射
+
+NFT: #1234
+代币: Example Token (EXAMPLE)
+CA: 0x...
+市值/流动性: 未索引 / 未索引
+
+持仓: 暂无数据
+交易: https://etherscan.io/tx/0x...
+```
+
 ### 1. Create A Bot
 
 1. Open Telegram.
@@ -67,6 +100,16 @@ node scripts/ttt-monitor.js --enrich-token 0x74cd414b31459489Daa5981a76cfcc462C6
 ```
 
 The manual enrichment path prints locally but does not send notifications. To test actual notification delivery, temporarily run a known historical `Launched` block range if available, or add a small local test wrapper that calls `notify()`.
+
+### 5. Quiet Mode
+
+No extra setting is needed. The normal polling command:
+
+```bash
+npm run monitor
+```
+
+sends Telegram messages only when the scan finds at least one `Launched` event.
 
 ## Discord Webhook
 

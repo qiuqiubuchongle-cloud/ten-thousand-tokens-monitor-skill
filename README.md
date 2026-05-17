@@ -1,10 +1,39 @@
 # Ten Thousand Tokens Monitor Skill
 
-A Codex skill and runnable Node.js monitor for Ten Thousand Tokens by TokenWorks.
+**Core function:** monitor Ten Thousand Tokens on Ethereum mainnet. When an NFT is burned through the protocol's launch path, the monitor captures the emitted `Launched` event, extracts the newly active ERC20 token CA, enriches basic market/holder data when public indexers have it, and sends a short alert to Telegram, Discord, Feishu/Lark, or email.
 
-It watches Ethereum mainnet for Ten Thousand Tokens `Launched` events, extracts the launched ERC20 CA, enriches the token with metadata/market/holder data when available, and sends alerts to Telegram, Discord, Feishu/Lark, or email.
+**Core logic:** do not guess from webpages or contract-creation traces. The Ten Thousand Tokens contract has a verified event:
+
+```solidity
+event Launched(uint256 indexed tokenId, address indexed token, address indexed launcher, string imageURI);
+```
+
+That event is the clean signal. It means one NFT has moved through the burn-to-launch flow and its paired ERC20 token is now launched.
 
 Alert messages are intentionally short: NFT id, token name, CA, market/liquidity, holder concentration, and links.
+
+## Product Logic
+
+Ten Thousand Tokens is a TokenWorks protocol built around 10,000 NFTs and 10,000 paired ERC20 tokens.
+
+- The NFT/protocol contract lives on Ethereum mainnet.
+- Each NFT maps to one ERC20 token contract.
+- Many paired ERC20 contracts can already exist before they are launched.
+- The important action is `burnAndLaunch(...)`: the NFT is burned, token metadata is set, the launcher is recorded, and the paired ERC20 enters its launch/trading path.
+- The protocol emits `Launched(tokenId, token, launcher, imageURI)`.
+- The monitor listens for this event and alerts only when a launched token appears.
+
+Protocol contract:
+
+```text
+0x26d7ad0e930b54b84c00daad077ee31ba9e2fb2e
+```
+
+Whitepaper:
+
+```text
+https://www.token.works/ten-thousand-tokens-whitepaper.html
+```
 
 ## Why This Exists
 
@@ -15,6 +44,8 @@ event Launched(uint256 indexed tokenId, address indexed token, address indexed l
 ```
 
 That event is the cleanest monitoring trigger.
+
+The common mistake is to monitor only "new contract creation." That is not enough here, because paired ERC20 contracts can be deployed earlier. This monitor watches the actual launch event.
 
 ## Install
 
@@ -71,6 +102,35 @@ Supported:
 See:
 
 `references/notification-integrations.md`
+
+Telegram alert template:
+
+```text
+TTT 新代币发射
+
+NFT: #1234
+代币: Example Token (EXAMPLE)
+CA: 0x...
+市值/流动性: $123,456 / $12,345
+
+持仓: Top1 12.3% / Top10 45.6%
+交易: https://etherscan.io/tx/0x...
+行情: https://dexscreener.com/ethereum/...
+```
+
+If market/holder data is not indexed yet:
+
+```text
+TTT 新代币发射
+
+NFT: #1234
+代币: Example Token (EXAMPLE)
+CA: 0x...
+市值/流动性: 未索引 / 未索引
+
+持仓: 暂无数据
+交易: https://etherscan.io/tx/0x...
+```
 
 ## Documentation
 
